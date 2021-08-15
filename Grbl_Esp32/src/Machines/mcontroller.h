@@ -4,6 +4,11 @@
 #define MACHINE_NAME "CPU_MAP_MCONTROLLER"
 #define SHOW_EXTENDED_SETTINGS
 
+#define SPINDLE_TYPE            SpindleType::TOOLCHANGER // default, check actual $Spindle/Type Setting
+#define ToolChanger_RS485_TXD_PIN        GPIO_NUM_19 //default 26
+#define ToolChanger_RS485_RTS_PIN        GPIO_NUM_18
+#define ToolChanger_RS485_RXD_PIN        GPIO_NUM_5 //default 16
+
 //#define USE_GANGED_AXES // allow two motors on an axis
 
 #define X_STEP_PIN    GPIO_NUM_17
