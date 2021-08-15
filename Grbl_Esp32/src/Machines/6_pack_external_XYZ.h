@@ -35,6 +35,11 @@
 
 #define N_AXIS 3
 
+#define SPINDLE_TYPE            SpindleType::TOOLCHANGER // default, check actual $Spindle/Type Setting
+#define ToolChanger_RS485_TXD_PIN        GPIO_NUM_26
+#define ToolChanger_RS485_RTS_PIN        GPIO_NUM_4
+#define ToolChanger_RS485_RXD_PIN        GPIO_NUM_16
+
 // === Special Features
 
 // I2S (steppers & other output-only pins)

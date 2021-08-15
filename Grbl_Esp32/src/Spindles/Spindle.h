@@ -39,6 +39,7 @@ enum class SpindleType : int8_t {
     _10V,
     H2A,
     YL620,
+    TOOLCHANGER
 };
 
 #include "../Grbl.h"
