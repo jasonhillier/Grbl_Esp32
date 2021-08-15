@@ -111,6 +111,27 @@ namespace Spindles {
         bool          safetyPollingEnabled = instance->safety_polling();
 
         while (true) {
+            vTaskDelay(ToolChanger_RS485_POLL_RATE / portTICK_PERIOD_MS);
+
+            next_cmd.msg[0] = ToolChanger_RS485_ADDR;
+            next_cmd.msg[1] = 'A';
+            next_cmd.tx_length = 2;
+
+            // Flush the UART:
+            //_uart.flush();
+
+            // Write the data:
+            _uart.write(reinterpret_cast<const char*>(next_cmd.msg), next_cmd.tx_length);
+            _uart.flushTxTimed(response_ticks);
+
+            uint16_t current_read = _uart.readBytes(rx_message, 2, response_ticks);
+
+            if (current_read>0)
+            {
+                report_hex_msg(rx_message, "RS485 Rx: ", current_read);
+            }
+        }
+        /*
             response_parser parser = nullptr;
 
             next_cmd.msg[0] = ToolChanger_RS485_ADDR;  // Always default to this
@@ -292,6 +313,7 @@ namespace Spindles {
 
             vTaskDelay(ToolChanger_RS485_POLL_RATE / portTICK_PERIOD_MS);
         }
+        */
     }
 
     // ================== Class methods ==================================
