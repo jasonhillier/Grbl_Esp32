@@ -88,7 +88,7 @@ namespace Spindles {
 #ifdef ToolChanger_RS485_BAUD_RATE
             ToolChanger_RS485_BAUD_RATE
 #else
-            9600
+            115200
 #endif
             ),
         _dataBits(Uart::Data::Bits8), _stopBits(Uart::Stop::Bits1), _parity(
@@ -100,36 +100,62 @@ namespace Spindles {
                                                                     ) {
     }
 
+    bool ToolChanger::writeRegister(uint8_t reg, uint16_t val)
+    {
+        ModbusCommand next_cmd;
+
+        next_cmd.msg[0] = ToolChanger_RS485_ADDR;
+        next_cmd.msg[1] = 0x10; //write-multi
+        next_cmd.msg[2] = 0x00;
+        next_cmd.msg[3] = reg;
+        next_cmd.msg[4] = 0x00;
+        next_cmd.msg[5] = 0x01;
+        next_cmd.msg[6] = 0x02;
+        next_cmd.msg[7] = uint8_t(val >> 8);  // RPM
+        next_cmd.msg[8] = uint8_t(val & 0xFF);
+
+        next_cmd.tx_length = 9;
+
+        auto crc16 = ModRTU_CRC(next_cmd.msg, next_cmd.tx_length);
+
+        next_cmd.tx_length += 2;
+        //next_cmd.rx_length += 2;
+
+        // add the calculated Crc to the message
+        next_cmd.msg[next_cmd.tx_length - 1] = (crc16 & 0xFF00) >> 8;
+        next_cmd.msg[next_cmd.tx_length - 2] = (crc16 & 0xFF);
+
+        // Flush the UART:
+        //_uart.flush();
+
+        report_hex_msg(next_cmd.msg, "RS485 Tx: ", next_cmd.tx_length);
+        // Write the data:
+        _uart.write(reinterpret_cast<const char*>(next_cmd.msg), next_cmd.tx_length);
+        _uart.flushTxTimed(response_ticks);
+
+        uint8_t       rx_message[ToolChanger_RS485_MAX_MSG_SIZE];
+        uint16_t current_read = _uart.readBytes(rx_message, ToolChanger_RS485_MAX_MSG_SIZE, response_ticks);
+        if (current_read>0)
+        {
+            report_hex_msg(rx_message, "RS485 Rx: ", current_read);
+        }
+
+        return current_read > 0;
+    }
+
     // The communications task
     void ToolChanger::ToolChanger_cmd_task(void* pvParameters) {
         static bool unresponsive = false;  // to pop off a message once each time it becomes unresponsive
         static int  pollidx      = -1;     // -1 starts the ToolChanger initialization sequence
 
         ToolChanger*          instance = static_cast<ToolChanger*>(pvParameters);
-        ModbusCommand next_cmd;
-        uint8_t       rx_message[ToolChanger_RS485_MAX_MSG_SIZE];
         bool          safetyPollingEnabled = instance->safety_polling();
 
         while (true) {
             vTaskDelay(ToolChanger_RS485_POLL_RATE / portTICK_PERIOD_MS);
 
-            next_cmd.msg[0] = ToolChanger_RS485_ADDR;
-            next_cmd.msg[1] = 'A';
-            next_cmd.tx_length = 2;
-
-            // Flush the UART:
-            //_uart.flush();
-
-            // Write the data:
-            _uart.write(reinterpret_cast<const char*>(next_cmd.msg), next_cmd.tx_length);
-            _uart.flushTxTimed(response_ticks);
-
-            uint16_t current_read = _uart.readBytes(rx_message, 2, response_ticks);
-
-            if (current_read>0)
-            {
-                report_hex_msg(rx_message, "RS485 Rx: ", current_read);
-            }
+            //flowrate
+            //instance->writeRegister(0x11, pos);
         }
         /*
             response_parser parser = nullptr;
@@ -535,17 +561,15 @@ namespace Spindles {
         direction_command(mode, mode_cmd);
 
         if (mode == SpindleState::Disable) {
-            if (!xQueueReset(ToolChanger_cmd_queue)) {
-                grbl_msg_sendf(CLIENT_SERIAL, MsgLevel::Info, "ToolChanger spindle off, queue could not be reset");
-            }
+            writeRegister(0x0B, 0);
+        }
+        else if (mode != _current_state)
+        {
+            writeRegister(0x0B, 1);
         }
 
         mode_cmd.critical = critical;
         _current_state    = mode;
-
-        if (xQueueSend(ToolChanger_cmd_queue, &mode_cmd, 0) != pdTRUE) {
-            grbl_msg_sendf(CLIENT_SERIAL, MsgLevel::Info, "ToolChanger Queue Full");
-        }
 
         return true;
     }
@@ -584,8 +608,10 @@ namespace Spindles {
 
         _current_rpm = rpm;
 
-        // TODO add the speed modifiers override, linearization, etc.
+        writeRegister(0x11, _current_rpm);
 
+        // TODO add the speed modifiers override, linearization, etc.
+        /*
         ModbusCommand rpm_cmd;
         rpm_cmd.msg[0] = ToolChanger_RS485_ADDR;
 
@@ -600,6 +626,7 @@ namespace Spindles {
         if (xQueueSend(ToolChanger_cmd_queue, &rpm_cmd, 0) != pdTRUE) {
             grbl_msg_sendf(CLIENT_SERIAL, MsgLevel::Info, "ToolChanger Queue Full");
         }
+        */
 
         return rpm;
     }

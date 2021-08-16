@@ -34,6 +34,7 @@ namespace Spindles {
 
         bool set_mode(SpindleState mode, bool critical);
         bool get_pins_and_settings();
+        bool writeRegister(uint8_t reg, uint16_t val);
 
         int _txd_pin;
         int _rxd_pin;
