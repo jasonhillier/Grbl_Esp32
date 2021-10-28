@@ -101,7 +101,14 @@ Socket #3
 #2 GPIO_NUM_4
 #3 GPIO_NUM_16
 #4 GPIO_NUM_27
+*/
 
+#define SPINDLE_TYPE            SpindleType::TOOLCHANGER // default, check actual $Spindle/Type Setting
+#define ToolChanger_RS485_TXD_PIN        GPIO_NUM_26 //default 26
+#define ToolChanger_RS485_RTS_PIN        GPIO_NUM_4
+#define ToolChanger_RS485_RXD_PIN        GPIO_NUM_16 //default 16
+
+/*
 Socket #4
 #1 GPIO_NUM_14
 #2 GPIO_NUM_13
@@ -125,11 +132,19 @@ Socket #5
 
 // 5V output CNC module in socket #3
 // https://github.com/bdring/6-Pack_CNC_Controller/wiki/4x-5V-Buffered-Output-Module
+/*
 #define SPINDLE_TYPE            SpindleType::PWM
 #define SPINDLE_OUTPUT_PIN      GPIO_NUM_26
 #define SPINDLE_ENABLE_PIN      GPIO_NUM_4
 #define SPINDLE_DIR_PIN         GPIO_NUM_16
+*/
 #define COOLANT_MIST_PIN        GPIO_NUM_27
 
 // === Default settings
 #define DEFAULT_STEP_PULSE_MICROSECONDS I2S_OUT_USEC_PER_PULSE
+
+//M67 E0 Q23.87 (set set output#1 to 23.87% duty)
+#define USER_ANALOG_PIN_0      GPIO_NUM_12
+#define USER_ANALOG_PIN_1      GPIO_NUM_15
+#define USER_ANALOG_PIN_0_FREQ      50  // Hz
+#define USER_ANALOG_PIN_1_FREQ      50  // Hz
