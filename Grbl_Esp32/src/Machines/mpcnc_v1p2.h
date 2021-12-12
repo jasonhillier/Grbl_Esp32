@@ -29,7 +29,11 @@
 
 #define MACHINE_NAME "MPCNC_V1P2"
 
-#define DEFAULT_HOMING_SQUARED_AXES (bit(X_AXIS) | bit(Y_AXIS))
+#define DEFAULT_HOMING_SQUARED_AXES (bit(Y_AXIS))
+#define DEFAULT_HOMING_CYCLE_0 (bit(Y_AXIS))
+#define DEFAULT_HOMING_CYCLE_1 (bit(X_AXIS))
+#define DEFAULT_HOMING_CYCLE_2 0 //(bit(Z_AXIS))
+#define DEFAULT_HOMING_CYCLE_3 0
 
 #define X_STEP_PIN      GPIO_NUM_12
 #define X2_STEP_PIN     GPIO_NUM_22  // ganged motor
@@ -104,10 +108,10 @@
 #define DEFAULT_REPORT_INCHES       0 // false
 
 #define DEFAULT_SOFT_LIMIT_ENABLE 0 // false
-#define DEFAULT_HARD_LIMIT_ENABLE 0  // false
+#define DEFAULT_HARD_LIMIT_ENABLE 1  // true
 
-#define DEFAULT_HOMING_ENABLE           1  // false
-#define DEFAULT_HOMING_DIR_MASK         3 // move positive dir Z,negative X,Y
+#define DEFAULT_HOMING_ENABLE           1  // true
+#define DEFAULT_HOMING_DIR_MASK         1 // upper-left
 #define DEFAULT_HOMING_FEED_RATE        100.0 // mm/min
 #define DEFAULT_HOMING_SEEK_RATE        200.0 // mm/min
 #define DEFAULT_HOMING_DEBOUNCE_DELAY   250 // msec (0-65k)
