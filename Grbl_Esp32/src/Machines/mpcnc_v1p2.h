@@ -25,6 +25,9 @@
     along with Grbl_ESP32.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+//espefuse.py:
+//C:\dev\esp-idf\export.bat
+
 // // Pin assignments for the Buildlog.net MPCNC controller
 
 #define MACHINE_NAME "MPCNC_V1P2"
